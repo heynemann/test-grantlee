@@ -10,6 +10,7 @@
 #include <string>
 #include <tuple>
 
+#include "crow_all.h"
 #include "grantlee/engine.h"
 #include "grantlee/template.h"
 
@@ -59,13 +60,27 @@ int main(int argc, char *argv[]) {
 
   auto *engine = new Grantlee::Engine(0);
   auto t = engine->newTemplate(temp, "my_template_name");
-  QVariantHash mapping;
-  mapping.insert("name", "Grainne");
-  Grantlee::Context c(mapping);
 
-  std::cout << "\n\nBuilding " << repetitions << " templates...\n";
-  for (auto i = 0; i < repetitions; i++)
-    t->render(&c); // Returns "My name is Grainne."
+  // std::cout << "\n\nBuilding " << repetitions << " templates...\n";
+  // for (auto i = 0; i < repetitions; i++)
+  // t->render(&c); // Returns "My name is Grainne."
+  crow::SimpleApp app;
 
+  CROW_ROUTE(app, "/")
+  ([&t]() {
+    QVariantHash mapping;
+    mapping.insert("name", "Grainne");
+    Grantlee::Context c(mapping);
+
+    auto res = t->render(&c);
+
+    std::string utf8_text = res.toUtf8().constData();
+    return utf8_text;
+  });
+
+  app.loglevel(crow::LogLevel::ERROR);
+
+  app.port(18080).multithreaded().run();
+  // app.port(18080).run();
   return 0;
 }
