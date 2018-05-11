@@ -8,7 +8,7 @@ clean:
 	@rm -rf ./build
 
 run:
-	@./build/api 1000
+	@./build/api 6
 	#@cutelyst-wsgi2 \
 		#--http-socket :8080 \
 		#--application ./build/libMyApp.so \

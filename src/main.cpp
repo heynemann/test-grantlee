@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <QJsonDocument>
 #include <iostream>
 #include <map>
 #include <string>
@@ -57,9 +58,31 @@ int main(int argc, char *argv[]) {
       </body>
     </html>
 )";
+  auto temp2 = R"(
+    <html>
+      <head>
+        <title>{% block title %}My Stuff{% endblock %}</title>
+      </head>
+      <body>
+      <div class="sidebar">
+        {% block sidebar %}
+        {% endblock sidebar %}
+      </div>
+      <div class="main_content">
+        {% block content %}
+		<ul>
+          <li>Key1: {{ key1 }}</li>
+          <li>Key2: {{ key2 }}</li>
+		</ul>
+        {% endblock content %}
+      </div>
+      </body>
+    </html>
+)";
 
   auto *engine = new Grantlee::Engine(0);
   auto t = engine->newTemplate(temp, "my_template_name");
+  auto t2 = engine->newTemplate(temp2, "my_template_name_2");
 
   // std::cout << "\n\nBuilding " << repetitions << " templates...\n";
   // for (auto i = 0; i < repetitions; i++)
@@ -68,8 +91,9 @@ int main(int argc, char *argv[]) {
 
   CROW_ROUTE(app, "/")
   ([&t]() {
-    QVariantHash mapping;
-    mapping.insert("name", "Grainne");
+    QVariantMap hash;
+    hash.insert("name", "Grainne");
+    QVariantHash mapping = qvariant_cast<QVariantHash>(hash);
     Grantlee::Context c(mapping);
 
     auto res = t->render(&c);
@@ -78,9 +102,24 @@ int main(int argc, char *argv[]) {
     return utf8_text;
   });
 
+  CROW_ROUTE(app, "/add_json")
+      .methods("POST"_method)([&t2](const crow::request &req) {
+        auto body = QString::fromUtf8(req.body.c_str());
+        auto doc = QJsonDocument::fromJson(body.toUtf8());
+        if (doc.isNull())
+          return crow::response(400);
+
+        QVariantHash mapping = qvariant_cast<QVariantHash>(doc.toVariant());
+        Grantlee::Context c(mapping);
+
+        auto res = t2->render(&c);
+        std::string utf8_text = res.toUtf8().constData();
+        return crow::response(utf8_text);
+      });
+
   app.loglevel(crow::LogLevel::ERROR);
 
-  app.port(18080).multithreaded().run();
+  app.port(18080).concurrency(repetitions).run();
   // app.port(18080).run();
   return 0;
 }
