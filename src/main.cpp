@@ -25,6 +25,7 @@ struct CommandArgs {
   bool help;
   std::string host;
   int port;
+  int workers;
   int log_level;
   std::string config_file;
 } parsed;
@@ -57,6 +58,10 @@ void parse_args(int argc, char *argv[]) {
 
   parsed.host = cmdl({"-b", "--bind"}, "0.0.0.0").str();
 
+  int workers;
+  cmdl({"-w", "--workers"}, 8) >> workers;
+  parsed.workers = workers;
+
   auto const cfg = cmdl({"-c", "--config"}, "config.yml").str();
   auto const abspath = boost::filesystem::absolute(cfg);
   parsed.config_file = abspath.string();
@@ -68,15 +73,17 @@ void parse_args(int argc, char *argv[]) {
 }
 
 void print_usage() {
-  std::cout << "Backstage Renderer v0.1.0\n"
-            << "-------------------------\n"
-            << "Use this command line app to run Backstage Renderer.\n\n"
-            << "The following flags are available:\n"
-            << "-v, -vv, -vvv   # Log Level: Default - ERROR, -v WARN, -vv "
-               "INFO, -vvv ERROR\n"
-            << "-c config.yml   # Path to config file. MUST EXIST!\n"
-            << "-b 0.0.0.0      # IP Address to Bind HTTP Server to\n"
-            << "-p 8888         # Port to Bind HTTP Server to\n";
+  std::cout
+      << "Backstage Renderer v0.1.0\n"
+      << "-------------------------\n"
+      << "Use this command line app to run Backstage Renderer.\n\n"
+      << "The following flags are available:\n"
+      << "-v, -vv, -vvv             # Log Level: Default - ERROR, -v WARN,"
+      << "                          # -vv INFO, -vvv ERROR\n"
+      << "-c[--config=] config.yml  # Path to config file. MUST EXIST!\n"
+      << "-b[--bind=] 0.0.0.0       # IP Address to Bind HTTP Server to\n"
+      << "-p[--port=] 8888          # Port to Bind HTTP Server to\n"
+      << "-w[--workers=] 8          # Number of Worker Threads in the API\n";
 }
 
 int main(int argc, char *argv[]) {
