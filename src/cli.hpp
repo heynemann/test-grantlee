@@ -1,28 +1,25 @@
-#pragma once
+// Copyright 2018 Bernardo Heynemann <heynemann@gmail.com>
+// Backstage Renderer
 
-#ifdef MAINCLIFILE
-#define EXTERN
-#else
-#define EXTERN extern
-#endif
+#pragma once
 
 #include <string>
 
 namespace backstage {
 namespace renderer {
 
-EXTERN struct CommandArgs {
-  bool help;
-  std::string host;
-  int port;
-  int workers;
-  int log_level;
-  std::string config_file;
-} parsed_options;
+class CliRoot {
+ public:
+    bool help = false;
+    std::string host = "localhost";
+    int port = 8888;
+    int workers = 8;
+    int logLevel = 0;
+    std::string configFile = "config.yaml";
 
-void parse_args(int argc, char *argv[]);
-
-void print_usage();
-
-} // namespace renderer
-} // namespace backstage
+    CliRoot() {}
+    void ParseArgs(int argc, char *argv[]);
+    void PrintUsage();
+};
+}  // namespace renderer
+}  // namespace backstage

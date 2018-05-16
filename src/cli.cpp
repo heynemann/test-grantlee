@@ -1,3 +1,6 @@
+// Copyright 2018 Bernardo Heynemann <heynemann@gmail.com>
+// Backstage Renderer
+
 #define MAINCLIFILE
 
 #include <iostream>
@@ -13,60 +16,63 @@
 namespace backstage {
 namespace renderer {
 
-void parse_args(int argc, char *argv[]) {
-  argh::parser cmdl({"-h", "--help", "-v", "-vv", "-vvv", "-b", "--bind", "-p",
-                     "--port", "-c", "--config", "-w", "--workers"});
-  cmdl.parse(argc, argv);
+void CliRoot::ParseArgs(int argc, char *argv[]) {
+    argh::parser cmdl({"-h", "--help", "-v", "-vv", "-vvv", "-b", "--bind",
+                       "-p", "--port", "-c", "--config", "-w", "--workers"});
+    cmdl.parse(argc, argv);
 
-  parsed_options.help = false;
-  if (cmdl[{"-h", "--help"}]) {
-    parsed_options.help = true;
-  }
+    help = false;
+    if (cmdl[{"-h", "--help"}]) {
+        help = true;
+    }
 
-  int log_level = 0;
-  if (cmdl[{"-v"}]) {
-    log_level = 1;
-  }
-  if (cmdl[{"-vv"}]) {
-    log_level = 2;
-  }
-  if (cmdl[{"-vvv"}]) {
-    log_level = 3;
-  }
-  parsed_options.log_level = log_level;
+    int ll = 0;
+    if (cmdl[{"-v"}]) {
+        ll = 1;
+    }
+    if (cmdl[{"-vv"}]) {
+        ll = 2;
+    }
+    if (cmdl[{"-vvv"}]) {
+        ll = 3;
+    }
+    logLevel = ll;
 
-  int port;
-  cmdl({"-p", "--port"}, 8888) >> port;
-  parsed_options.port = port;
+    int p;
+    cmdl({"-p", "--port"}, 8888) >> p;
+    port = p;
 
-  parsed_options.host = cmdl({"-b", "--bind"}, "0.0.0.0").str();
+    host = cmdl({"-b", "--bind"}, "0.0.0.0").str();
 
-  int workers;
-  cmdl({"-w", "--workers"}, 8) >> workers;
-  parsed_options.workers = workers;
+    int w;
+    cmdl({"-w", "--workers"}, 8) >> w;
+    workers = w;
 
-  auto const cfg = cmdl({"-c", "--config"}, "config.yml").str();
-  auto const abspath = boost::filesystem::absolute(cfg);
-  parsed_options.config_file = abspath.string();
-  if (!boost::filesystem::exists(parsed_options.config_file)) {
-    std::cout << "No configuration file could be found at " << abspath.string()
-              << ". Terminating...\n";
-    exit(1);
-  }
+    auto const cfg = cmdl({"-c", "--config"}, "config.yml").str();
+    auto const abspath = boost::filesystem::absolute(cfg);
+    configFile = abspath.string();
+    if (!boost::filesystem::exists(configFile)) {
+        std::cout << "No configuration file could be found at "
+                  << abspath.string() << ". Terminating...\n";
+        exit(1);
+    }
 }
 
-void print_usage() {
-  std::cout
-      << "Backstage Renderer v0.1.0\n"
-      << "-------------------------\n"
-      << "Use this command line app to run Backstage Renderer.\n\n"
-      << "The following flags are available:\n"
-      << "-v, -vv, -vvv             # Log Level: Default - ERROR, -v WARN,\n"
-      << "                          # -vv INFO, -vvv ERROR\n"
-      << "-c[--config=] config.yml  # Path to config file. MUST EXIST!\n"
-      << "-b[--bind=] 0.0.0.0       # IP Address to Bind HTTP Server to\n"
-      << "-p[--port=] 8888          # Port to Bind HTTP Server to\n"
-      << "-w[--workers=] 8          # Number of Worker Threads in the API\n";
+void CliRoot::PrintUsage() {
+    std::cout << "Backstage Renderer v0.1.0\n"
+              << "-------------------------\n"
+              << "Use this command line app to run Backstage Renderer.\n\n"
+              << "The following flags are available:\n"
+              << "-v, -vv, -vvv             # Log Level:\n"
+              << "                          # * Default: Error\n"
+              << "                          # * -v:      Warning\n"
+              << "                          # * -vv:     Info\n"
+              << "                          # * -vvv:    Debug\n"
+              << "-c[--config=] config.yml  # Path to config file.\n"
+              << "                          # MUST EXIST!\n"
+              << "-b[--bind=] 0.0.0.0       # IP Address to Bind Server\n"
+              << "-p[--port=] 8888          # Port to Bind HTTP Server to\n"
+              << "-w[--workers=] 8          # Number of Worker Threads\n";
 }
-}
-}
+}  // namespace renderer
+}  // namespace backstage
