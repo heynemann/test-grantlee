@@ -1,8 +1,6 @@
 // Copyright 2018 Bernardo Heynemann <heynemann@gmail.com>
 // Backstage Renderer
 
-#define MAINCLIFILE
-
 #include <iostream>
 #include <map>
 #include <string>

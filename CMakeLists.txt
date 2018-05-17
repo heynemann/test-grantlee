@@ -41,7 +41,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 #find_package(Qt5Widgets)
 
 # Now we create an executable
-add_executable(api ./src/cli.cpp ./src/main.cpp)
+add_executable(api ./src/cli.cpp ./src/api.cpp ./src/main.cpp)
 
 # Now a lib
 #add_library(MyApp SHARED ./src/hello.cpp ./src/root.cpp)
