@@ -14,9 +14,11 @@ namespace renderer {
 RendererApp::RendererApp(std::unique_ptr<CliRoot> client)
     : client(std::move(client)) {
     ConfigureLogLevel();
-    // InitializeTemplateEngine();
-    // ConfigureRoutes();
+    InitializeTemplateEngine();
+    ConfigureRoutes();
 }
+
+RendererApp::~RendererApp() { delete engine; }
 
 void RendererApp::ConfigureLogLevel() {
     switch (client->logLevel) {
@@ -36,45 +38,63 @@ void RendererApp::ConfigureLogLevel() {
 }
 
 void RendererApp::InitializeTemplateEngine() {
-    std::cout << "Configuring templates...\n";
+    engine = new TemplateEngine(client->templatePath);
 
-    templateEngine = new Grantlee::Engine(0);
-    auto loader = QSharedPointer<Grantlee::InMemoryTemplateLoader>::create();
-    loader->setTemplate("my_template_name", temp);
-    loader->setTemplate("my_template_name_2", temp2);
-    templateEngine->addTemplateLoader(loader);
+    // templateEngine = new Grantlee::Engine(0);
+    // auto loader = QSharedPointer<Grantlee::InMemoryTemplateLoader>::create();
+    // loader->setTemplate("my_template_name", temp);
+    // loader->setTemplate("my_template_name_2", temp2);
+    // templateEngine->addTemplateLoader(loader);
 }
 
 void RendererApp::ConfigureRoutes() {
-    auto t = templateEngine->loadByName("my_template_name");
+    const auto working = "WORKING";
 
-    CROW_ROUTE(app, "/")
-    ([this, &t]() {
-        QVariantMap hash;
-        hash.insert("name", "Grainne");
-        QVariantHash mapping = qvariant_cast<QVariantHash>(hash);
-        Grantlee::Context c(mapping);
+    CROW_ROUTE(app, "/healthcheck")
+    ([this, &working]() { return working; });
 
-        // auto t = templateEngine->loadByName("my_template_name");
-        auto res = t->render(&c);
+    CROW_ROUTE(app, "/").methods("GET"_method)(
+        [this](const crow::request &req) {
+            std::string name = "World";
+            if (req.url_params.get("name") != NULL) {
+                name = std::string(req.url_params.get("name"));
+            }
+            CROW_LOG_INFO << "name == '" << name << "'";
 
-        std::string utf8_text = res.toUtf8().constData();
-        return utf8_text;
-    });
-
-    CROW_ROUTE(app, "/add_json")
-        .methods("POST"_method)([this](const crow::request &req) {
-            auto doc = QJsonDocument::fromJson(req.body.c_str());
-            if (doc.isNull()) return crow::response(400);
-
-            QVariantHash mapping = qvariant_cast<QVariantHash>(doc.toVariant());
+            QVariantMap hash;
+            hash.insert("name", name.c_str());
+            QVariantHash mapping = qvariant_cast<QVariantHash>(hash);
             Grantlee::Context c(mapping);
 
-            auto t = templateEngine->loadByName("my_template_name_2");
+            auto t = engine->templates["templ"];
             auto res = t->render(&c);
+
             std::string utf8_text = res.toUtf8().constData();
-            return crow::response(utf8_text);
+            return utf8_text;
         });
+
+    // CROW_ROUTE(app, "/render")
+    //.methods("POST"_method)([&templates](const crow::request &req) {
+    //// Get Template Path
+    // auto templ = req.url_params.get("templ");
+
+    //// Template not found!
+    // if (templates.count(templ) == 0) return crow::response(400);
+
+    //// Get Context
+    // auto doc = QJsonDocument::fromJson(req.body.c_str());
+
+    //// Context could not be parsed!
+    // if (doc.isNull()) return crow::response(400);
+
+    // QVariantHash mapping = qvariant_cast<QVariantHash>(doc.toVariant());
+    // Grantlee::Context c(mapping);
+
+    // auto t = templates[templ];
+    // auto res = t->render(&c);
+    // std::string utf8_text = res.toUtf8().constData();
+    // return crow::response(utf8_text);
+    //});
 }
 
 void RendererApp::PrintRunningOptions() {
@@ -84,67 +104,17 @@ void RendererApp::PrintRunningOptions() {
     std::cout << "  Log Level: " << client->logLevel << "\n";
     std::cout << "  Workers: " << client->workers << "\n";
     std::cout << "  Config File: " << client->configFile << "\n";
+    std::cout << "  Templates Path: " << client->templatePath << "\n";
     std::cout << "  URL: http://" << client->host << ":" << client->port
               << "\n";
 }
+
 void RendererApp::Run() {
-    auto *engine = new Grantlee::Engine(0);
-    auto templates = std::map<std::string, Grantlee::Template>{
-        {"my_template_name", engine->newTemplate(temp, "my_template_name")},
-        {"my_template_name_2", engine->newTemplate(temp2, "my_template_name")},
-        {"my_template_name_3", engine->newTemplate(temp3, "my_template_name")},
-    };
-
-    CROW_ROUTE(app, "/")
-    ([&templates]() {
-        QVariantMap hash;
-        hash.insert("name", "Grainne");
-        QVariantHash mapping = qvariant_cast<QVariantHash>(hash);
-        Grantlee::Context c(mapping);
-
-        auto t = templates["my_template_name"];
-        auto res = t->render(&c);
-
-        std::string utf8_text = res.toUtf8().constData();
-        return utf8_text;
-    });
-
-    // TODO(heynemann): This won't work without a proper template loader
-    CROW_ROUTE(app, "/inherit")
-    ([&templates]() {
-        QVariantMap hash;
-        hash.insert("name", "Grainne");
-        QVariantHash mapping = qvariant_cast<QVariantHash>(hash);
-        Grantlee::Context c(mapping);
-
-        auto t = templates["my_template_name_3"];
-        auto res = t->render(&c);
-
-        std::string utf8_text = res.toUtf8().constData();
-        return utf8_text;
-    });
-
-    CROW_ROUTE(app, "/add_json")
-        .methods("POST"_method)([&templates](const crow::request &req) {
-            auto doc = QJsonDocument::fromJson(req.body.c_str());
-            if (doc.isNull()) return crow::response(400);
-
-            QVariantHash mapping = qvariant_cast<QVariantHash>(doc.toVariant());
-            Grantlee::Context c(mapping);
-
-            auto t = templates["my_template_name_2"];
-            auto res = t->render(&c);
-            std::string utf8_text = res.toUtf8().constData();
-            return crow::response(utf8_text);
-        });
-
     PrintRunningOptions();
     app.bindaddr(client->host)
         .port(client->port)
         .concurrency(client->workers)
         .run();
-
-    free(engine);
 }
 }  // namespace renderer
 }  // namespace backstage

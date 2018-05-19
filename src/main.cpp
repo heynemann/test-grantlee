@@ -18,7 +18,7 @@
 #include "src/api.hpp"
 #include "src/cli.hpp"
 
-// #include "src/apiConfig.h"
+#include "src/apiConfig.h"
 
 using namespace backstage::renderer;
 
@@ -27,7 +27,14 @@ int main(int argc, char *argv[]) {
     cli->ParseArgs(argc, argv);
 
     if (cli->help) {
-        cli->PrintUsage();
+        cli->PrintUsage(API_VERSION_MAJOR, API_VERSION_MINOR,
+                        API_VERSION_REVISION);
+        return 0;
+    }
+
+    if (cli->version) {
+        cli->PrintVersion(API_VERSION_MAJOR, API_VERSION_MINOR,
+                          API_VERSION_REVISION);
         return 0;
     }
 

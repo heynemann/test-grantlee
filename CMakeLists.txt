@@ -19,8 +19,8 @@ set(API_VERSION_REVISION 0)
 # Configure a header file to include
 # configurations in our program
 configure_file(
-    "${PROJECT_SOURCE_DIR}/src/apiConfig.h.in"
-    "${PROJECT_BINARY_DIR}/src/apiConfig.h"
+    "${PROJECT_SOURCE_DIR}/src/api_config.h.in"
+    "${PROJECT_BINARY_DIR}/src/api_config.h"
 )
 
 # As moc files are generated in the binary dir, tell CMake
@@ -41,7 +41,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 #find_package(Qt5Widgets)
 
 # Now we create an executable
-add_executable(api ./src/cli.cpp ./src/api.cpp ./src/main.cpp)
+add_executable(api ./src/cli.cpp ./src/template.cpp ./src/api.cpp ./src/main.cpp)
 
 # Now a lib
 #add_library(MyApp SHARED ./src/hello.cpp ./src/root.cpp)
