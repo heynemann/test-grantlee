@@ -39,12 +39,6 @@ void RendererApp::ConfigureLogLevel() {
 
 void RendererApp::InitializeTemplateEngine() {
     engine = new TemplateEngine(client->templatePath);
-
-    // templateEngine = new Grantlee::Engine(0);
-    // auto loader = QSharedPointer<Grantlee::InMemoryTemplateLoader>::create();
-    // loader->setTemplate("my_template_name", temp);
-    // loader->setTemplate("my_template_name_2", temp2);
-    // templateEngine->addTemplateLoader(loader);
 }
 
 void RendererApp::ConfigureRoutes() {

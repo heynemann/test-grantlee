@@ -16,6 +16,7 @@ TemplateEngine::TemplateEngine(std::string templatePath)
 }
 
 void TemplateEngine::LoadTemplates() {
+    templates.clear();
     std::cout << "Loading templates...\n";
     auto engine = new Grantlee::Engine(0);
     auto loader = QSharedPointer<Grantlee::InMemoryTemplateLoader>::create();
