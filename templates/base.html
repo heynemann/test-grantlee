@@ -1,23 +1,27 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>{% block title %}My Stuff{% endblock %}</title>
-  </head>
-  <body>
-    <div class="sidebar">
-      {% block sidebar %}
-      <div class="contents">
-        <p>Move along!</p>
-      </div>
-      {% endblock sidebar %}
-    </div>
-    <div class="main_content">
-      {% block content %}
-      <ul>
-        <li>Key1: {{ key1 }}</li>
-        <li>Key2: {{ key2 }}</li>
-      </ul>
-      {% endblock content %}
-    </div>
-  </body>
+	<head>
+		<title>{% block title %}My Stuff{% endblock %}</title>
+	</head>
+	<body>
+		<div class="sidebar">
+			{% block sidebar %}
+			<div class="contents">
+				<p>Move along!</p>
+			</div>
+			{% endblock sidebar %}
+		</div>
+		<div class="main_content">
+			{% block content %}
+			<ul>
+				<li>Key1: {{ key1 }}</li>
+				<li>Key2: {{ key2 }}</li>
+			</ul>
+			{% endblock content %}
+
+			<div class="books">
+				{% include "includes/test.html" %}
+			</div>
+		</div>
+	</body>
 </html>

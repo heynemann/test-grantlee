@@ -14,11 +14,10 @@ namespace renderer {
 RendererApp::RendererApp(std::unique_ptr<CliRoot> client)
     : client(std::move(client)) {
     ConfigureLogLevel();
-    InitializeTemplateEngine();
     ConfigureRoutes();
 }
 
-RendererApp::~RendererApp() { delete engine; }
+RendererApp::~RendererApp() {}
 
 void RendererApp::ConfigureLogLevel() {
     switch (client->logLevel) {
@@ -35,10 +34,6 @@ void RendererApp::ConfigureLogLevel() {
             app.loglevel(crow::LogLevel::ERROR);
             break;
     }
-}
-
-void RendererApp::InitializeTemplateEngine() {
-    engine = new TemplateEngine(client->templatePath);
 }
 
 void RendererApp::ConfigureRoutes() {
@@ -60,35 +55,39 @@ void RendererApp::ConfigureRoutes() {
             QVariantHash mapping = qvariant_cast<QVariantHash>(hash);
             Grantlee::Context c(mapping);
 
-            auto t = engine->templates["templ"];
-            auto res = t->render(&c);
-
-            std::string utf8_text = res.toUtf8().constData();
-            return utf8_text;
+            auto eng = TemplateEngine::GetEngine(client->templatePath);
+            return eng->Render("alone.html", c);
         });
 
-    // CROW_ROUTE(app, "/render")
-    //.methods("POST"_method)([&templates](const crow::request &req) {
-    //// Get Template Path
-    // auto templ = req.url_params.get("templ");
+    CROW_ROUTE(app, "/render")
+        .methods("POST"_method)([this](const crow::request &req) {
+            // Get Template Path
+            auto templ = req.url_params.get("templ");
+            CROW_LOG_INFO << "template == '" << templ << "'";
+            if (!templ) {
+                CROW_LOG_WARNING
+                    << "[Backstage-Renderer] No template was passed in ?templ "
+                       "querystring.";
+                return crow::response(400);
+            }
 
-    //// Template not found!
-    // if (templates.count(templ) == 0) return crow::response(400);
+            auto eng = TemplateEngine::GetEngine(client->templatePath);
 
-    //// Get Context
-    // auto doc = QJsonDocument::fromJson(req.body.c_str());
+            // Template not found!
+            if (!eng->HasTemplate(templ)) return crow::response(400);
 
-    //// Context could not be parsed!
-    // if (doc.isNull()) return crow::response(400);
+            // Get Context
+            auto doc = QJsonDocument::fromJson(req.body.c_str());
 
-    // QVariantHash mapping = qvariant_cast<QVariantHash>(doc.toVariant());
-    // Grantlee::Context c(mapping);
+            // Context could not be parsed!
+            if (doc.isNull()) return crow::response(400);
 
-    // auto t = templates[templ];
-    // auto res = t->render(&c);
-    // std::string utf8_text = res.toUtf8().constData();
-    // return crow::response(utf8_text);
-    //});
+            QVariantHash mapping = qvariant_cast<QVariantHash>(doc.toVariant());
+            Grantlee::Context c(mapping);
+
+            // std::string utf8_text = res.toUtf8().constData();
+            return crow::response(eng->Render(templ, c).c_str());
+        });
 }
 
 void RendererApp::PrintRunningOptions() {

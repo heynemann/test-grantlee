@@ -21,7 +21,6 @@ class RendererApp {
  private:
     crow::SimpleApp app;
     std::unique_ptr<CliRoot> client;
-    TemplateEngine *engine;
 
  public:
     explicit RendererApp(std::unique_ptr<CliRoot> client);
