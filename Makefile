@@ -15,10 +15,16 @@ clean:
 	@rm -rf ./build
 
 run: docker-build
-	@docker run -it -v"`pwd`:/app" -p"8888:8888" jinja2cpp /bin/bash -c "make compile && ./build/api 6"
+	@docker run -it -v"`pwd`:/app" -p"8888:8888" jinja2cpp /bin/bash -c "make compile && ./build/api -vvv --templates /app/templates/"
+
+run-prod: docker-build
+	@docker run -it -v"`pwd`:/app" -p"8888:8888" jinja2cpp /bin/bash -c "make compile && ./build/api --templates /app/templates/"
 
 docker-build:
 	@docker build -t jinja2cpp .
 
 docker-run:
 	@docker run -it -v"`pwd`:/app" jinja2cpp 
+
+bench:
+	@wrk -c30 -d 30 -t10 --latency -s post.lua "http://localhost:8888/render?templ=alone.html"

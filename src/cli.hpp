@@ -17,7 +17,7 @@ class CliRoot {
     int workers = 8;
     int logLevel = 0;
     std::string configFile = "config.yaml";
-    std::string templatePath = "./templates";
+    std::string templatePath = "./templates/";
 
     CliRoot() {}
     void ParseArgs(int argc, char *argv[]);

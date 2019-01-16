@@ -6,11 +6,13 @@
 #include <map>
 #include <string>
 #include <tuple>
-#include "jinja2cpp/template.h"
+#include <nlohmann/json.hpp>
+#include <inja.hpp>
 
 #include "src/api.hpp"
 
-using namespace jinja2;
+using json = nlohmann::json;
+using namespace inja;
 
 namespace backstage {
 namespace renderer {
@@ -47,56 +49,49 @@ void RendererApp::ConfigureRoutes() {
 
     CROW_ROUTE(app, "/").methods("GET"_method)(
         [this](const crow::request &req) {
-            //std::string name = "World";
-            //if (req.url_params.get("name") != NULL) {
-                //name = std::string(req.url_params.get("name"));
-            //}
-            //CROW_LOG_INFO << "name == '" << name << "'";
+            json data;
+            data["name"] = "world";
 
-            //QVariantMap hash;
-            //hash.insert("name", name.c_str());
-            //QVariantHash mapping = qvariant_cast<QVariantHash>(hash);
-            //Grantlee::Context c(mapping);
-
-            //auto eng = TemplateEngine::GetEngine(client->templatePath);
-            //return eng->Render("alone.html", c);
-            std::string source = "Hello World from Parser!";
-            Template tpl;
-            tpl.Load(source);
-
-            std::string result = tpl.RenderAsString(ValuesMap());
+            auto result = render("Hello {{ name }}!", data); // "Hello world!"
             return result;
         });
 
-    //CROW_ROUTE(app, "/render")
-        //.methods("POST"_method)([this](const crow::request &req) {
-            //// Get Template Path
-            //auto templ = req.url_params.get("templ");
-            //CROW_LOG_INFO << "template == '" << templ << "'";
-            //if (!templ) {
-                //CROW_LOG_WARNING
-                    //<< "[Backstage-Renderer] No template was passed in ?templ "
-                       //"querystring.";
-                //return crow::response(400);
-            //}
+    CROW_ROUTE(app, "/render")
+        .methods("POST"_method)([this](const crow::request &req) {
+            // Get Template Path
+            auto templ = req.url_params.get("templ");
+            CROW_LOG_INFO << "template == '" << templ << "'";
+            if (!templ) {
+                CROW_LOG_WARNING
+                    << "[Backstage-Renderer] No template was passed in ?templ "
+                       "querystring.";
+                return crow::response(400);
+            }
 
-            //auto eng = TemplateEngine::GetEngine(client->templatePath);
+            auto data = json::parse(req.body.c_str());
 
-            //// Template not found!
-            //if (!eng->HasTemplate(templ)) return crow::response(400);
+            CROW_LOG_INFO << "Template Path: " << client->templatePath;
+            Environment env {client->templatePath, "/tmp"};
+            auto temp = env.parse_template(templ);
 
-            //// Get Context
-            //auto doc = QJsonDocument::fromJson(req.body.c_str());
+            if (temp.content == "") {
+                CROW_LOG_WARNING
+                    << "[Backstage-Renderer] Template at path " << templ <<
+                       " could not be found.";
+                return crow::response(400);
+            }
 
-            //// Context could not be parsed!
-            //if (doc.isNull()) return crow::response(400);
 
-            //QVariantHash mapping = qvariant_cast<QVariantHash>(doc.toVariant());
-            //Grantlee::Context c(mapping);
+            CROW_LOG_INFO << "Template contents: " << temp.content;
+            std::string result = env.render(temp, data);
+            CROW_LOG_WARNING << "Result: " << result;
 
-            //// std::string utf8_text = res.toUtf8().constData();
-            //return crow::response(eng->Render(templ, c).c_str());
-        //});
+            crow::response resp;
+            resp.code = 200;
+            resp.add_header("Content-Type", "text/plain");
+            resp.write(result);
+            return resp;
+        });
 }
 
 void RendererApp::PrintRunningOptions() {

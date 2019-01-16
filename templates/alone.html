@@ -1,17 +1,13 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>{% block title %}My Stuff{% endblock %}</title>
+    <title>My Stuff</title>
   </head>
   <body>
     <div class="sidebar">
-      {% block sidebar %}
-      {% endblock sidebar %}
     </div>
     <div class="main_content">
-      {% block content %}
       Hello {{ name }}!
-      {% endblock content %}
     </div>
   </body>
 </html>
