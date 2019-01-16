@@ -60,7 +60,7 @@ void RendererApp::ConfigureRoutes() {
         .methods("POST"_method)([this](const crow::request &req) {
             // Get Template Path
             auto templ = req.url_params.get("templ");
-            CROW_LOG_INFO << "template == '" << templ << "'";
+            CROW_LOG_DEBUG << "template == '" << templ << "'";
             if (!templ) {
                 CROW_LOG_WARNING
                     << "[Backstage-Renderer] No template was passed in ?templ "
@@ -70,7 +70,7 @@ void RendererApp::ConfigureRoutes() {
 
             auto data = json::parse(req.body.c_str());
 
-            CROW_LOG_INFO << "Template Path: " << client->templatePath;
+            CROW_LOG_DEBUG << "Template Path: " << client->templatePath;
             Environment env {client->templatePath, "/tmp"};
             auto temp = env.parse_template(templ);
 
@@ -82,9 +82,9 @@ void RendererApp::ConfigureRoutes() {
             }
 
 
-            CROW_LOG_INFO << "Template contents: " << temp.content;
+            CROW_LOG_DEBUG << "Template contents: " << temp.content;
             std::string result = env.render(temp, data);
-            CROW_LOG_WARNING << "Result: " << result;
+            CROW_LOG_DEBUG << "Result: " << result;
 
             crow::response resp;
             resp.code = 200;
