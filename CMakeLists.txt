@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.9.4)
 # Project's Name
 project(api)
 
-list (APPEND CMAKE_MODULE_PATH /jinja2cpp/cmake)
+#list (APPEND CMAKE_MODULE_PATH /jinja2cpp/cmake)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -12,7 +12,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #find_package(Qt5 5.5.0 REQUIRED COMPONENTS Core Network Widgets)
 #find_package(Qt5Widgets REQUIRED) 
 find_package(Boost 1.52 COMPONENTS system thread filesystem REQUIRED)
-find_package(Jinja2Cpp REQUIRED)
+#find_package(Jinja2Cpp REQUIRED)
  
 # Project's version number
 set(API_VERSION_MAJOR 0)
@@ -34,7 +34,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(
     ${PROJECT_BINARY_DIR}   
     ${Boost_INCLUDE_DIR}
-    /jinja2cpp/include
+    #/jinja2cpp/include
 )
  
 # Using C++ 17
@@ -58,5 +58,5 @@ target_link_libraries(
     #Qt5::Network
     #Qt5::Widgets
     ${Boost_LIBRARIES}
-    /jinja2cpp/lib
+    #/jinja2cpp/lib
 )

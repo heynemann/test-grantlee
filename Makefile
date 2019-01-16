@@ -9,7 +9,7 @@ setup:
 
 build c compile:
 	@mkdir -p build
-	@cd build && bash -c "cmake -D CMAKE_C_COMPILER=clang -D CMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release .. && make"
+	@cd build && bash -c "cmake -D CMAKE_C_COMPILER=gcc -D CMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Release .. && make"
 
 clean:
 	@rm -rf ./build
