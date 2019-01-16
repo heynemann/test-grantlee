@@ -18,7 +18,7 @@
 #include "src/api.hpp"
 #include "src/cli.hpp"
 
-#include "src/apiConfig.h"
+#include "src/api_config.h"
 
 using namespace backstage::renderer;
 

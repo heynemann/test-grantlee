@@ -1,13 +1,16 @@
 // Copyright 2018 Bernardo Heynemann <heynemann@gmail.com>
 // Backstage Renderer
 
-#include <QJsonDocument>
+//#include <QJsonDocument>
 #include <iostream>
 #include <map>
 #include <string>
 #include <tuple>
+#include "jinja2cpp/template.h"
 
 #include "src/api.hpp"
+
+using namespace jinja2;
 
 namespace backstage {
 namespace renderer {
@@ -44,50 +47,56 @@ void RendererApp::ConfigureRoutes() {
 
     CROW_ROUTE(app, "/").methods("GET"_method)(
         [this](const crow::request &req) {
-            std::string name = "World";
-            if (req.url_params.get("name") != NULL) {
-                name = std::string(req.url_params.get("name"));
-            }
-            CROW_LOG_INFO << "name == '" << name << "'";
+            //std::string name = "World";
+            //if (req.url_params.get("name") != NULL) {
+                //name = std::string(req.url_params.get("name"));
+            //}
+            //CROW_LOG_INFO << "name == '" << name << "'";
 
-            QVariantMap hash;
-            hash.insert("name", name.c_str());
-            QVariantHash mapping = qvariant_cast<QVariantHash>(hash);
-            Grantlee::Context c(mapping);
+            //QVariantMap hash;
+            //hash.insert("name", name.c_str());
+            //QVariantHash mapping = qvariant_cast<QVariantHash>(hash);
+            //Grantlee::Context c(mapping);
 
-            auto eng = TemplateEngine::GetEngine(client->templatePath);
-            return eng->Render("alone.html", c);
+            //auto eng = TemplateEngine::GetEngine(client->templatePath);
+            //return eng->Render("alone.html", c);
+            std::string source = "Hello World from Parser!";
+            Template tpl;
+            tpl.Load(source);
+
+            std::string result = tpl.RenderAsString(ValuesMap());
+            return result;
         });
 
-    CROW_ROUTE(app, "/render")
-        .methods("POST"_method)([this](const crow::request &req) {
-            // Get Template Path
-            auto templ = req.url_params.get("templ");
-            CROW_LOG_INFO << "template == '" << templ << "'";
-            if (!templ) {
-                CROW_LOG_WARNING
-                    << "[Backstage-Renderer] No template was passed in ?templ "
-                       "querystring.";
-                return crow::response(400);
-            }
+    //CROW_ROUTE(app, "/render")
+        //.methods("POST"_method)([this](const crow::request &req) {
+            //// Get Template Path
+            //auto templ = req.url_params.get("templ");
+            //CROW_LOG_INFO << "template == '" << templ << "'";
+            //if (!templ) {
+                //CROW_LOG_WARNING
+                    //<< "[Backstage-Renderer] No template was passed in ?templ "
+                       //"querystring.";
+                //return crow::response(400);
+            //}
 
-            auto eng = TemplateEngine::GetEngine(client->templatePath);
+            //auto eng = TemplateEngine::GetEngine(client->templatePath);
 
-            // Template not found!
-            if (!eng->HasTemplate(templ)) return crow::response(400);
+            //// Template not found!
+            //if (!eng->HasTemplate(templ)) return crow::response(400);
 
-            // Get Context
-            auto doc = QJsonDocument::fromJson(req.body.c_str());
+            //// Get Context
+            //auto doc = QJsonDocument::fromJson(req.body.c_str());
 
-            // Context could not be parsed!
-            if (doc.isNull()) return crow::response(400);
+            //// Context could not be parsed!
+            //if (doc.isNull()) return crow::response(400);
 
-            QVariantHash mapping = qvariant_cast<QVariantHash>(doc.toVariant());
-            Grantlee::Context c(mapping);
+            //QVariantHash mapping = qvariant_cast<QVariantHash>(doc.toVariant());
+            //Grantlee::Context c(mapping);
 
-            // std::string utf8_text = res.toUtf8().constData();
-            return crow::response(eng->Render(templ, c).c_str());
-        });
+            //// std::string utf8_text = res.toUtf8().constData();
+            //return crow::response(eng->Render(templ, c).c_str());
+        //});
 }
 
 void RendererApp::PrintRunningOptions() {

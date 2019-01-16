@@ -6,13 +6,8 @@
 #include <memory>
 #include <string>
 
-#include "grantlee/engine.h"
-#include "grantlee/template.h"
-#include "grantlee/templateloader.h"
-
 #include "src/cli.hpp"
 #include "src/crow_all.h"
-#include "src/template.hpp"
 
 namespace backstage {
 namespace renderer {

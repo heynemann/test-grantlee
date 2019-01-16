@@ -9,10 +9,16 @@ setup:
 
 build c compile:
 	@mkdir -p build
-	@cd build && bash -c "CC=/usr/bin/clang-6.0 CXX=/usr/bin/clang++-6.0 cmake .. -DCMAKE_BUILD_TYPE=Release && make"
+	@cd build && bash -c "cmake -D CMAKE_C_COMPILER=clang -D CMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release .. && make"
 
 clean:
 	@rm -rf ./build
 
-run:
-	@./build/api 6
+run: docker-build
+	@docker run -it -v"`pwd`:/app" -p"8888:8888" jinja2cpp /bin/bash -c "make compile && ./build/api 6"
+
+docker-build:
+	@docker build -t jinja2cpp .
+
+docker-run:
+	@docker run -it -v"`pwd`:/app" jinja2cpp 
